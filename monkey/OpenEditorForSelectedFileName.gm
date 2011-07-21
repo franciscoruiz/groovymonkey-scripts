@@ -1,0 +1,40 @@
+/*
+ * Menu: Open editor for selected file name
+ * Script-Path: /groovymonkey-scripts/monkey/OpenEditorForSelectedFileName.gm
+ * Kudos: fran
+ * License: EPL 1.0
+ * LANG: Python
+ * Job: UIJob
+ * DOM: http://groovy-monkey.sourceforge.net/update/plugins/net.sf.groovyMonkey.dom
+ */
+from org.eclipse.ui import PlatformUI
+from org.eclipse.ui.part import FileEditorInput
+
+
+def open_editor(file):
+	workbench = PlatformUI.getWorkbench()
+	desc = workbench.getEditorRegistry().getDefaultEditor(file.getName())
+	window.activePage.openEditor(FileEditorInput(file), desc.getId())
+
+
+def get_text_selection():
+	editor = window.activePage.activeEditor
+	source = editor.sourceViewer.document
+	
+	# Get the current line
+	selection = window.activePage.selection
+	
+	# Use the content of the whole line
+	# current_line = selection.startLine
+	# selection = source.getLineInformation(current_line)
+	
+	return source.get(selection.offset, selection.length)
+
+
+def main():
+	# The replace method will replace the selected text...
+	for resource in resources.filesMatching('.*' + get_text_selection()):
+		open_editor(resource.file)
+
+		
+main()
