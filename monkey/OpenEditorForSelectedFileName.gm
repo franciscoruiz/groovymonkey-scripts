@@ -11,30 +11,35 @@ from org.eclipse.ui import PlatformUI
 from org.eclipse.ui.part import FileEditorInput
 
 
-def open_editor(file):
-	workbench = PlatformUI.getWorkbench()
-	desc = workbench.getEditorRegistry().getDefaultEditor(file.getName())
-	window.activePage.openEditor(FileEditorInput(file), desc.getId())
+def main():
+	"""
+	Search for files matching the current editor selected text and open
+	an editor for each one.
+	
+	"""
+	for resource in resources.filesMatching('.*' + get_text_selection()):
+		open_default_editor(resource.file)
 
-
+		
 def get_text_selection():
+	"""Return the selected text in the active editor"""
 	editor = window.activePage.activeEditor
 	source = editor.sourceViewer.document
-	
-	# Get the current line
 	selection = window.activePage.selection
 	
 	# Use the content of the whole line
+	# Get the current line
 	# current_line = selection.startLine
 	# selection = source.getLineInformation(current_line)
 	
 	return source.get(selection.offset, selection.length)
 
 
-def main():
-	# The replace method will replace the selected text...
-	for resource in resources.filesMatching('.*' + get_text_selection()):
-		open_editor(resource.file)
+def open_default_editor(file):
+	"""Open `file` with its default associated editor"""
+	editor_registry = PlatformUI.getWorkbench().getEditorRegistry()
+	editor_for_file = editor_registry.getDefaultEditor(file.getName())
+	window.activePage.openEditor(FileEditorInput(file), editor_for_file.getId())
 
-		
+
 main()
