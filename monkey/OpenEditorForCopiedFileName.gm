@@ -44,6 +44,8 @@ def main():
         else:
             for resource in resources_matching:
                 open_default_editor(resource.file)
+    else:
+        show_info("No text found in the clipboard")
 
 
 def get_clipboard_text():
@@ -60,7 +62,10 @@ def open_default_editor(file):
     editor_registry = PlatformUI.getWorkbench().getEditorRegistry()
     editor_for_file = editor_registry.getDefaultEditor(file.getName())
     if editor_for_file:
-       window.activePage.openEditor(FileEditorInput(file), editor_for_file.getId())
+        window.activePage.openEditor(
+            FileEditorInput(file), editor_for_file.getId())
+    else:
+        show_info("There's no default editor for \"%s\"" % file.getName())
 
 
 def show_info(message, title=None):
