@@ -7,39 +7,63 @@
  * Job: UIJob
  * DOM: http://groovy-monkey.sourceforge.net/update/plugins/net.sf.groovyMonkey.dom
  */
+"""
+Search for files matching the current editor selected text and open an editor
+for each one.
+
+"""
+from org.eclipse.jface.dialogs import MessageDialog
 from org.eclipse.ui import PlatformUI
 from org.eclipse.ui.part import FileEditorInput
 
 
-def main():
-	"""
-	Search for files matching the current editor selected text and open
-	an editor for each one.
-	
-	"""
-	for resource in resources.filesMatching('.*' + get_text_selection()):
-		open_default_editor(resource.file)
+MAX_EDITORS_TO_OPEN = 3
+"""
+Maximum number of editors that will be opened.
 
-		
+If the number of matches is higher, no editors will be opened.
+
+"""
+
+
+def main():
+    """
+    Search for files matching the current editor selected text and open
+    an editor for each one.
+
+    """
+    text_selection = get_text_selection().strip()
+    if text_selection:
+        resources_matching = resources.filesMatching('.*' + text_selection)
+        if not resources_matching:
+            show_info('No resources matching "%s"' % text_selection)
+        elif len(resources_matching) > MAX_EDITORS_TO_OPEN:
+            show_info("Too many coincidences (%s)" % len(resources_matching))
+        else:
+            for resource in resources_matching:
+                open_default_editor(resource.file)
+
+
 def get_text_selection():
-	"""Return the selected text in the active editor"""
-	editor = window.activePage.activeEditor
-	source = editor.sourceViewer.document
-	selection = window.activePage.selection
-	
-	# Use the content of the whole line
-	# Get the current line
-	# current_line = selection.startLine
-	# selection = source.getLineInformation(current_line)
-	
-	return source.get(selection.offset, selection.length)
+    """Return the selected text in the active editor"""
+    editor = window.activePage.activeEditor
+    source = editor.sourceViewer.document
+    selection = window.activePage.selection
+    return source.get(selection.offset, selection.length)
 
 
 def open_default_editor(file):
-	"""Open `file` with its default associated editor"""
-	editor_registry = PlatformUI.getWorkbench().getEditorRegistry()
-	editor_for_file = editor_registry.getDefaultEditor(file.getName())
-	window.activePage.openEditor(FileEditorInput(file), editor_for_file.getId())
+    """Open `file` with its default associated editor"""
+    editor_registry = PlatformUI.getWorkbench().getEditorRegistry()
+    editor_for_file = editor_registry.getDefaultEditor(file.getName())
+    if editor_for_file:
+       window.activePage.openEditor(FileEditorInput(file), editor_for_file.getId())
+
+
+def show_info(message, title=None):
+    """Show a information message dialog"""
+    title = title or "Information"
+    MessageDialog.openInformation(window.getShell(), title, message)
 
 
 main()
