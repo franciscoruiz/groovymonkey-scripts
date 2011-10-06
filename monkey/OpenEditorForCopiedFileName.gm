@@ -1,0 +1,72 @@
+/*
+ * Menu: Open editor for copied file name
+ * Script-Path: /groovymonkey-scripts/monkey/OpenEditorForCopiedFileName.gm
+ * Kudos: fran
+ * License: EPL 1.0
+ * LANG: Python
+ * Job: UIJob
+ * DOM: http://groovy-monkey.sourceforge.net/update/plugins/net.sf.groovyMonkey.dom
+ */
+"""
+Search for files matching the clipboard content and open an editor for
+each one.
+
+"""
+from org.eclipse.jface.dialogs import MessageDialog
+from org.eclipse.swt.dnd import Clipboard, TextTransfer
+from org.eclipse.swt.widgets import Display
+from org.eclipse.ui import PlatformUI
+from org.eclipse.ui.part import FileEditorInput
+
+
+MAX_EDITORS_TO_OPEN = 3
+"""
+Maximum number of editors that will be opened.
+
+If the number of matches is higher, no editors will be opened.
+
+"""
+
+
+def main():
+    """
+    Search for files matching the clipboard content and open an editor for
+    each one.
+    
+    """
+    text_selection = get_clipboard_text().strip()
+    if text_selection:
+        resources_matching = resources.filesMatching('.*' + text_selection)
+        if not resources_matching:
+            show_info('No resources matching "%s"' % text_selection)
+        elif len(resources_matching) > MAX_EDITORS_TO_OPEN:
+            show_info("Too many coincidences (%s)" % len(resources_matching))
+        else:
+            for resource in resources_matching:
+                open_default_editor(resource.file)
+
+
+def get_clipboard_text():
+    """Return the content of the system clipboard"""
+    display = Display.getCurrent()
+    clipboard = Clipboard(display)
+    transfer = TextTransfer.getInstance()
+    clipboard_text = clipboard.getContents(transfer)
+    return clipboard_text
+
+
+def open_default_editor(file):
+    """Open `file` with its default associated editor"""
+    editor_registry = PlatformUI.getWorkbench().getEditorRegistry()
+    editor_for_file = editor_registry.getDefaultEditor(file.getName())
+    if editor_for_file:
+       window.activePage.openEditor(FileEditorInput(file), editor_for_file.getId())
+
+
+def show_info(message, title=None):
+    """Show a information message dialog"""
+    title = title or "Information"
+    MessageDialog.openInformation(window.getShell(), title, message)
+
+
+main()
