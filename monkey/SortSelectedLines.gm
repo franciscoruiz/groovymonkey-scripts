@@ -5,7 +5,6 @@
  * License: EPL 1.0
  * LANG: Python
  * Job: UIJob
- * DOM: http://groovy-monkey.sourceforge.net/update/plugins/net.sf.groovyMonkey.dom
  */
 """Sort the current editor selected lines alphabetically"""
 from org.eclipse.ui import PlatformUI

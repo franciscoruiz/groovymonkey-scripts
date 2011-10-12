@@ -5,7 +5,6 @@
  * License: EPL 1.0
  * LANG: Python
  * Job: UIJob
- * DOM: http://groovy-monkey.sourceforge.net/update/plugins/net.sf.groovyMonkey.dom
  */
 """
 Search for files matching the current editor selected text and open an editor
