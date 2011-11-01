@@ -1,0 +1,90 @@
+/*
+ * Menu: Convert dict() to {}
+ * Script-Path: /groovymonkey-scripts/monkey/TransformDictDefinition.gm
+ * Kudos: fran
+ * License: EPL 1.0
+ * LANG: Python
+ * Job: UIJob
+ * DOM: http://groovy-monkey.sourceforge.net/update/plugins/net.sf.groovyMonkey.dom
+ */
+"""
+Transform a call to the Python dictionary constructor into a declaration that
+uses curly braces.
+
+"""
+from java.util.regex import Matcher, Pattern
+
+from org.eclipse.jface.dialogs import MessageDialog
+from org.eclipse.ui import PlatformUI
+from org.eclipse.ui.part import FileEditorInput
+
+
+def main():
+    """
+    Transform a call to the Python dictionary constructor into a declaration
+    that uses curly braces.
+    
+    """
+    selected_text, offset, length = get_text_selection()
+    show_info(selected_text)
+    
+    pattern = Pattern.compile(r'(\w+)\s*=\s*(.+?)([,\)])')
+    matcher = pattern.matcher(selected_text)
+    
+    transformed_text = matcher.replaceAll("'$1': $2$3")
+    
+    transformed_text = transformed_text.replace('dict(', '{').replace(')', '}')
+    
+    show_info(transformed_text)
+    replace_text(offset, length, transformed_text)
+
+
+def get_text_selection(full_lines=False):
+    """
+    Return the selected text in the active editor.
+    
+    :param full_lines: Whether the full lines containing the selection 
+        should be returned instead of the selection itself.
+    
+    """
+    editor = window.activePage.activeEditor
+    source = editor.sourceViewer.document
+    selection = window.activePage.selection
+    
+    if full_lines:
+        selected_lines = []
+        for line in range(selection.startLine, selection.endLine + 1):
+            line_info = source.getLineInformation(line)
+            line_text = source.get(line_info.offset, line_info.length)
+            selected_lines.append(line_text)
+            
+        text_selection = "\n".join(selected_lines)
+        selection_offset = source.getLineInformation(selection.startLine).offset
+        selection_length = len(text_selection)
+        
+    else:
+        selection_offset = selection.offset
+        selection_length = selection.length
+        text_selection = source.get(selection_offset, selection_length)
+    
+    return text_selection, selection_offset, selection_length
+    
+
+def replace_text(offset, length, text_replacement):
+    """
+    Replace the text in the active editor from ``offset`` to ``offset`` +
+    ``length`` with ``text_replacement``.
+    
+    """
+    editor = window.activePage.activeEditor
+    source = editor.sourceViewer.document
+    source.replace(offset, length, text_replacement)
+
+
+def show_info(message, title=None):
+    """Show a information message dialog"""
+    title = title or "Information"
+    MessageDialog.openInformation(window.getShell(), title, message)
+
+
+main()
