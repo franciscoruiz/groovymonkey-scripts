@@ -47,7 +47,7 @@ def get_text_selection(full_lines=False):
     else:
         selection_offset = selection.offset
         selection_length = selection.length
-        text_selection = source.get()
+        text_selection = source.get(selection_offset, selection_length)
     
     return text_selection, selection_offset, selection_length
     
